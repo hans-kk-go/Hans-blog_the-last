@@ -1,6 +1,12 @@
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.digest.DigestUtil;
+import cn.hutool.crypto.digest.HMac;
+import cn.hutool.crypto.digest.MD5;
 import com.hans.commen.ResponseResult;
 import com.hans.entity.Article;
+import com.hans.entity.User;
 import com.hans.service.ArticleService;
+import com.hans.service.UserService;
 import com.hans.user.MainApp;
 import com.hans.user.Trader;
 import com.hans.user.Transaction;
@@ -8,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Array;
@@ -21,6 +28,8 @@ import java.util.stream.Stream;
 @Slf4j
 @SpringBootTest
 public class Testq {
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 //
 //    @Resource
@@ -215,6 +224,24 @@ public class Testq {
      * 终结操作： foeach max&min collect count
      * toset() 集合 已经帮我们去重完毕了
      */
+
+
+    @Autowired
+    private UserService userservice;
+    /**
+     * 加密解密算法
+     */
+    @Test
+    public void test(){
+        String s = SecureUtil.md5("sldf");
+//        System.out.println(MD5.create().digestHex(s));
+        User byId = userservice.getById(1L);
+        System.out.println(byId);
+
+
+//        String a= "ksdjfds";
+//        passwordEncoder.encode(a);
+    }
 
 
 

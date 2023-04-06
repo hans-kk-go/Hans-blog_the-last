@@ -1,9 +1,11 @@
 package com.hans.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hans.Constants.RedisConstants;
 import com.hans.commen.ResponseResult;
 import com.hans.dao.ArticleDao;
 import com.hans.dao.CategoryDao;
@@ -13,9 +15,11 @@ import com.hans.vo.ArticleDetailVo;
 import com.hans.vo.ArticleListVo;
 import com.hans.vo.HotArticleVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.hans.Constants.SystemConstants.ARTICLE_STATUS_NORMAL;
@@ -30,6 +34,9 @@ import static com.hans.Constants.SystemConstants.ARTICLE_STATUS_NORMAL;
 public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> implements ArticleService {
     @Autowired
     private CategoryDao categoryDao;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public ResponseResult hotArticleList() {
@@ -92,10 +99,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleDao, Article> impleme
 
     @Override
     public ResponseResult getArticleDetail(Long id) {
-        Article article = getById(id);
-        ArticleDetailVo articleDetailVo = BeanUtil.toBean(article, ArticleDetailVo.class);
+        String ArticleJson = stringRedisTemplate.opsForValue().get(RedisConstants.ARTICLE_RUNNER);
 
+        List<Article> articles = JSONUtil.toList(ArticleJson, Article.class);
+        Optional<Article> article1 = articles.stream()
+                .filter(one -> one.getId().equals(id))
+                .findAny();
+        Article article = article1.get();
+        article.setViewCount(article.getViewCount()+1L);
+
+
+//        Article article = getById(id);
+        ArticleDetailVo articleDetailVo = BeanUtil.toBean(article, ArticleDetailVo.class);
         articleDetailVo.setCategoryName(categoryDao.selectById(articleDetailVo.getId()).getName());
+
+        stringRedisTemplate.opsForValue().set(RedisConstants.ARTICLE_RUNNER,JSONUtil.toJsonStr(articles));
 
         return ResponseResult.ok("操作成功",articleDetailVo);
 

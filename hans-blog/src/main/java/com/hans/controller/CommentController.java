@@ -15,12 +15,17 @@ public class CommentController {
     private CommentService commentService;
     @GetMapping("/commentList")
     public ResponseResult getCommentList(Long articleId,Integer pageNum,Integer pageSize){
-        return commentService.getCommentList(articleId,pageNum,pageSize);
+        return commentService.getCommentList("0",articleId,pageNum,pageSize);
     }
 
     @PostMapping
     public ResponseResult addComment(@RequestBody Comment comment){
         return commentService.addComment(comment);
+    }
+
+    @GetMapping("/linkCommentList")
+    public ResponseResult linkCommentList(Long articleId,Integer pageNum,Integer pageSize){
+        return commentService.getCommentList("1",null,pageNum,pageSize);
     }
 
 }
